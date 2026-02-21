@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36915.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TwoIFClient", "TwoIFClient\TwoIFClient.csproj", "{D981FE3C-6A3C-4EC7-B3D6-2FDD4F7EEB44}"
+	ProjectSection(ProjectDependencies) = postProject
+		{174DFC56-7EBF-4F66-A015-4782251159DF} = {174DFC56-7EBF-4F66-A015-4782251159DF}
+		{864FF4EC-ED41-4433-BEF9-70E655F37C0E} = {864FF4EC-ED41-4433-BEF9-70E655F37C0E}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OtpLibrary", "OtpLibrary\OtpLibrary.csproj", "{864FF4EC-ED41-4433-BEF9-70E655F37C0E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{174DFC56-7EBF-4F66-A015-4782251159DF} = {174DFC56-7EBF-4F66-A015-4782251159DF}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QRCodeLibrary", "QRCodeLibrary\QRCodeLibrary.csproj", "{174DFC56-7EBF-4F66-A015-4782251159DF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D981FE3C-6A3C-4EC7-B3D6-2FDD4F7EEB44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D981FE3C-6A3C-4EC7-B3D6-2FDD4F7EEB44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D981FE3C-6A3C-4EC7-B3D6-2FDD4F7EEB44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D981FE3C-6A3C-4EC7-B3D6-2FDD4F7EEB44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{864FF4EC-ED41-4433-BEF9-70E655F37C0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{864FF4EC-ED41-4433-BEF9-70E655F37C0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{864FF4EC-ED41-4433-BEF9-70E655F37C0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{864FF4EC-ED41-4433-BEF9-70E655F37C0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{174DFC56-7EBF-4F66-A015-4782251159DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{174DFC56-7EBF-4F66-A015-4782251159DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{174DFC56-7EBF-4F66-A015-4782251159DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{174DFC56-7EBF-4F66-A015-4782251159DF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3A11EB19-CF0A-42B7-9C48-42F9BFEB086D}
+	EndGlobalSection
+EndGlobal

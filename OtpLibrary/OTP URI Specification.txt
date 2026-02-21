@@ -1,0 +1,32 @@
+# The URI MUST be formatted like below:
+`otpauth://TYPE/LABEL?PARAMETERS`
+
+# An approximate ABNF representation:
+```
+otpauth-uri    = "otpauth://" uri-type "/" uri-label "?" uri-parameters
+uri-type       = "totp" / "hotp"
+uri-label      = *VCHAR
+uri-parameters = "secret=" *base-32 [ *uri-opt-parameters ]
+
+uri-opt-parameters =  ("&algorithm=" otp-algorithm)
+uri-opt-parameters =/ ("&digits=" otp-digits)
+uri-opt-parameters =/ ("&counter=" *DIGIT) / ("&period=" *DIGIT)
+uri-opt-parameters =/ ("&issuer=" *VCHAR) / ("&" *VCHAR "=" *VCHAR)
+                        ; Please refer to RFC3986 for handling
+                        ; complex names
+
+otp-algorithm = "SHA1" / "SHA256" / "SHA512"
+
+otp-digits    = %x36-38
+                ; 6-8
+
+base-32 = %x41-5A / %x32-37
+                ; A-Z2-7
+DIGIT   = %x30-39
+                ; 0-9
+VCHAR   = %x21-7E
+                ; visible (printing) characters
+```
+
+# Example
+otpauth://totp/ACME:bugs.bunny%40example.com?secret=ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF&issuer=ACME
