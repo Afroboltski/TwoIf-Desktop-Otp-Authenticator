@@ -8,11 +8,16 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+    <ApplicationIcon>TwoIF Icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>none</DebugType>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="TwoIF Icon.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Otp.NET" Version="1.4.1" />
