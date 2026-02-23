@@ -47,6 +47,8 @@
             CounterOrPeriodLabel = new Label();
             CountOrPeriodTextBox = new TextBox();
             ChangePasswordButton = new Button();
+            label1 = new Label();
+            label2 = new Label();
             DigitsGroup.SuspendLayout();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -479,12 +481,11 @@
             // 
             // ChangePasswordButton
             // 
-            ChangePasswordButton = new Button();
             ChangePasswordButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             ChangePasswordButton.BackColor = Color.FromArgb(40, 40, 40);
             ChangePasswordButton.FlatStyle = FlatStyle.Flat;
             ChangePasswordButton.Font = new Font("Verdana", 9F);
-            ChangePasswordButton.ForeColor = Color.FromArgb(180, 180, 100); // muted yellow — distinct but not alarming
+            ChangePasswordButton.ForeColor = Color.FromArgb(180, 180, 100);
             ChangePasswordButton.Location = new Point(12, 648);
             ChangePasswordButton.Name = "ChangePasswordButton";
             ChangePasswordButton.Size = new Size(200, 28);
@@ -493,12 +494,32 @@
             ChangePasswordButton.UseVisualStyleBackColor = false;
             ChangePasswordButton.Click += ChangePasswordButton_Click;
             // 
+            // label1
+            // 
+            label1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            label1.BorderStyle = BorderStyle.Fixed3D;
+            label1.Location = new Point(12, 343);
+            label1.Name = "label1";
+            label1.Size = new Size(739, 2);
+            label1.TabIndex = 72;
+            // 
+            // label2
+            // 
+            label2.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            label2.BorderStyle = BorderStyle.Fixed3D;
+            label2.Location = new Point(12, 260);
+            label2.Name = "label2";
+            label2.Size = new Size(739, 2);
+            label2.TabIndex = 73;
+            // 
             // TokenManagerWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(24, 24, 24);
             ClientSize = new Size(763, 690);
+            Controls.Add(label2);
+            Controls.Add(label1);
             Controls.Add(CounterOrPeriodLabel);
             Controls.Add(CountOrPeriodTextBox);
             Controls.Add(groupBox1);
@@ -579,5 +600,7 @@
         private Label CounterOrPeriodLabel;
         private TextBox CountOrPeriodTextBox;
         private Button ChangePasswordButton;
+        private Label label1;
+        private Label label2;
     }
 }
