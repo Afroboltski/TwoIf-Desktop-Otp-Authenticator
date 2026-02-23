@@ -13,7 +13,6 @@ namespace TwoIFClient
         private int _timeRemaining = -1;
         private string _oneTimeCode = string.Empty;
         private OtpDatabase _database = null;
-        private const string DATABASE_FILE = "database.dat";
 
         OtpArticle _otpArticle = null;
 
@@ -140,8 +139,8 @@ namespace TwoIFClient
             CountEntry.BackColor = c;
         }
 
-        private readonly int _maxIntensity = 160;
-        private readonly int _minIntensity = 16;
+        private static readonly int _maxIntensity = 160;
+        private static readonly int _minIntensity = 16;
         private readonly int _intensityDiff; // Calculated in ctor
 
         private long _flashStartTickCount = -1;
@@ -193,21 +192,32 @@ namespace TwoIFClient
         private void Hamburger_Click(object sender, EventArgs e)
         {
             // Ensure we have a password before we can save (new-database case)
-            if (_dbPassword == null)
+            if (_database.Password == null)
             {
-                _dbPassword = PromptForPassword("Choose a password to protect the database:");
-                if (_dbPassword == null) return; // user cancelled
+                string firstPassword = PromptForPassword("Choose a password to protect the database:");
+                if (firstPassword == null) return; // user cancelled
+
+                string secondPassword = PromptForPassword("Re-enter the same password:");
+                if (secondPassword == null) return; // user cancelled
+
+                if(!string.Equals(firstPassword, secondPassword))
+                {
+                    MessageBox.Show("Passwords do not match!",
+                            "Password Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                _database.Password = firstPassword;
             }
 
             try
             {
-                using var manager = new TokenManagerWindow(_database, _otpArticle);
+                using var manager = new TokenManagerWindow(_database, _otpArticle, _minIntensity + 10);
                 manager.ShowDialog(this);
                 Cursor.Current = Cursors.WaitCursor;
 
                 // Persist whatever changes were made (adds, deletes, new selection)
                 _database.SelectedArticle = manager.SelectedArticle;
-                AppDataStore.Save(DATABASE_FILE, _database, _dbPassword);
 
                 // Apply — null is fine; ChangeArticle handles it
                 ChangeArticle(manager.SelectedArticle);
@@ -253,18 +263,19 @@ namespace TwoIFClient
 
         private string PromptForPassword(string prompt)
         {
-            using var dlg = new PasswordDialog(prompt);
+            using var dlg = new PasswordDialog(prompt, _minIntensity + 10);
             return dlg.ShowDialog() == DialogResult.OK ? dlg.Password : null;
         }
 
         private void TwoIFClientWindow_Load(object sender, EventArgs e)
         {
-            if (!AppDataStore.IsPresent(DATABASE_FILE))
+            if (!AppDataStore.IsPresent(OtpDatabase.DEFAULT_DATABASE_FILE_NAME))
             {
                 _database = new OtpDatabase();
                 return;
             }
 
+            int passwordAttempts = 0;
             while (true)
             {
                 string password = PromptForPassword("Enter database password:");
@@ -273,34 +284,48 @@ namespace TwoIFClient
                 try
                 {
                     Cursor.Current = Cursors.WaitCursor;
-                    _database = AppDataStore.Load(DATABASE_FILE, password);
+                    _database = AppDataStore.Load(OtpDatabase.DEFAULT_DATABASE_FILE_NAME, password);
                     if (_database == null)
                     {
-                        // All blobs failed to decrypt -> treat as wrong password
-                        var retry = MessageBox.Show("Incorrect password." + Environment.NewLine + Environment.NewLine + "Try again?",
-                            "Wrong Password", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-                        if (retry == DialogResult.Yes) continue;
-
-                        var fresh = MessageBox.Show("Open with a fresh (empty) database?",
-                            "Fresh Database?", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                        _database = fresh == DialogResult.Yes ? new OtpDatabase() : null;
-                        if (_database == null) { this.Close(); return; }
+                        DialogResult createNewDueToAccessError = MessageBox.Show("Failed to load database for an unknown reason." + Environment.NewLine + Environment.NewLine + "Open with a fresh (empty) database?",
+                            "Database Error", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+                        if (createNewDueToAccessError == DialogResult.Yes)
+                        {
+                            _database = new OtpDatabase();
+                            return;
+                        }
                     }
-
-                    _dbPassword = password;
+                    _database.Password = password;
                     break;
                 }
-                catch (Exception ex)
+                catch(InvalidPasswordException ex1)
+                {
+                    if(passwordAttempts >= 3)
+                    {
+                        _database = null;
+                        break;
+                    }
+                    var retry = MessageBox.Show("Incorrect password." + Environment.NewLine + Environment.NewLine + "Try again?",
+                            "Wrong Password", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    if (retry == DialogResult.Yes)
+                    {
+                        passwordAttempts++;
+                        continue;
+                    }
+                    _database = null;
+                    break;
+                }
+                catch (Exception ex2)
                 {
                     var sb = new System.Text.StringBuilder();
                     sb.AppendLine("Error opening database!");
                     sb.AppendLine();
-                    sb.AppendLine(ex.GetType().Name + " - " + ex.Message);
-                    if (ex.InnerException != null)
-                        sb.AppendLine("Inner: " + ex.InnerException.GetType().Name
-                                      + " - " + ex.InnerException.Message);
+                    sb.AppendLine(ex2.GetType().Name + " - " + ex2.Message);
+                    if (ex2.InnerException != null)
+                        sb.AppendLine("Inner: " + ex2.InnerException.GetType().Name
+                                      + " - " + ex2.InnerException.Message);
                     sb.AppendLine();
-                    sb.AppendLine("Open with a fresh database?");
+                    sb.AppendLine("Open with a fresh (empty) database?");
                     var res = MessageBox.Show(sb.ToString(), "Error",
                         MessageBoxButtons.YesNo, MessageBoxIcon.Error);
                     if (res == DialogResult.Yes) { _database = new OtpDatabase(); break; }
@@ -311,6 +336,8 @@ namespace TwoIFClient
                     Cursor.Current = Cursors.Default;
                 }
             }
+
+            if (_database == null) { this.Close(); return; }
 
             try
             {
@@ -323,8 +350,6 @@ namespace TwoIFClient
                 Cursor.Current = Cursors.Default;
             }
         }
-
-        private string _dbPassword = null; // set after successful load; used when saving
 
         private void CountLabel_Click(object sender, EventArgs e)
         {

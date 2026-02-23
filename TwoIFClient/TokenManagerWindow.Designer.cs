@@ -24,8 +24,6 @@
             SecretLabel = new Label();
             DividerLabel = new Label();
             SectionLabel = new Label();
-            label1 = new Label();
-            label2 = new Label();
             UriAddLabel = new Label();
             UriAddTextBox = new TextBox();
             AddUriButton = new Button();
@@ -48,6 +46,7 @@
             label3 = new Label();
             CounterOrPeriodLabel = new Label();
             CountOrPeriodTextBox = new TextBox();
+            ChangePasswordButton = new Button();
             DigitsGroup.SuspendLayout();
             groupBox1.SuspendLayout();
             groupBox2.SuspendLayout();
@@ -210,24 +209,6 @@
             SectionLabel.Size = new Size(200, 18);
             SectionLabel.TabIndex = 0;
             SectionLabel.Text = "Stored Tokens";
-            // 
-            // label1
-            // 
-            label1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            label1.BorderStyle = BorderStyle.Fixed3D;
-            label1.Location = new Point(12, 260);
-            label1.Name = "label1";
-            label1.Size = new Size(739, 2);
-            label1.TabIndex = 12;
-            // 
-            // label2
-            // 
-            label2.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            label2.BorderStyle = BorderStyle.Fixed3D;
-            label2.Location = new Point(12, 342);
-            label2.Name = "label2";
-            label2.Size = new Size(739, 2);
-            label2.TabIndex = 13;
             // 
             // UriAddLabel
             // 
@@ -443,7 +424,7 @@
             OptTOTP.ForeColor = Color.Silver;
             OptTOTP.Location = new Point(17, 12);
             OptTOTP.Name = "OptTOTP";
-            OptTOTP.Size = new Size(111, 19);
+            OptTOTP.Size = new Size(113, 19);
             OptTOTP.TabIndex = 32;
             OptTOTP.TabStop = true;
             OptTOTP.Text = "Time-Based OTP";
@@ -456,7 +437,7 @@
             OptHOTP.ForeColor = Color.Silver;
             OptHOTP.Location = new Point(179, 12);
             OptHOTP.Name = "OptHOTP";
-            OptHOTP.Size = new Size(175, 19);
+            OptHOTP.Size = new Size(176, 19);
             OptHOTP.TabIndex = 33;
             OptHOTP.Text = "HMAC-Based (Counter) OTP";
             OptHOTP.UseVisualStyleBackColor = true;
@@ -496,6 +477,22 @@
             CountOrPeriodTextBox.TabIndex = 34;
             CountOrPeriodTextBox.Text = "30";
             // 
+            // ChangePasswordButton
+            // 
+            ChangePasswordButton = new Button();
+            ChangePasswordButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            ChangePasswordButton.BackColor = Color.FromArgb(40, 40, 40);
+            ChangePasswordButton.FlatStyle = FlatStyle.Flat;
+            ChangePasswordButton.Font = new Font("Verdana", 9F);
+            ChangePasswordButton.ForeColor = Color.FromArgb(180, 180, 100); // muted yellow — distinct but not alarming
+            ChangePasswordButton.Location = new Point(12, 648);
+            ChangePasswordButton.Name = "ChangePasswordButton";
+            ChangePasswordButton.Size = new Size(200, 28);
+            ChangePasswordButton.TabIndex = 71;
+            ChangePasswordButton.Text = "🔑  Change Password…";
+            ChangePasswordButton.UseVisualStyleBackColor = false;
+            ChangePasswordButton.Click += ChangePasswordButton_Click;
+            // 
             // TokenManagerWindow
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -511,8 +508,6 @@
             Controls.Add(UriAddLabel);
             Controls.Add(UriAddTextBox);
             Controls.Add(label3);
-            Controls.Add(label2);
-            Controls.Add(label1);
             Controls.Add(SectionLabel);
             Controls.Add(TokenListBox);
             Controls.Add(SelectButton);
@@ -529,6 +524,7 @@
             Controls.Add(SecretLabel);
             Controls.Add(SecretTextBox);
             Controls.Add(AddManuallyButton);
+            Controls.Add(ChangePasswordButton);
             Controls.Add(CloseButton);
             DoubleBuffered = true;
             MaximizeBox = false;
@@ -560,8 +556,6 @@
         private System.Windows.Forms.Label    SecretLabel;
         private System.Windows.Forms.Label    DividerLabel;
         private System.Windows.Forms.Label    SectionLabel;
-        private Label label1;
-        private Label label2;
         private Label UriAddLabel;
         private TextBox UriAddTextBox;
         private Button AddUriButton;
@@ -584,5 +578,6 @@
         private Label label3;
         private Label CounterOrPeriodLabel;
         private TextBox CountOrPeriodTextBox;
+        private Button ChangePasswordButton;
     }
 }

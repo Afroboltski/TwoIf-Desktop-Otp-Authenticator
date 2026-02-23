@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using OtpLibrary;
 using TwoIFClient;
 
@@ -28,7 +30,7 @@ public static class AppDataStore
             File.Move(tempPath, actualPath);
             if (File.Exists(oldPath))
             {
-                File.Delete(oldPath);
+                OverriteDelete(oldPath);
             }
         }
         catch (Exception ex)
@@ -39,6 +41,41 @@ public static class AppDataStore
             }
             throw;
         }
+    }
+
+    [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
+    private static void OverriteDelete(string filePath)
+    {
+        using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+        using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Write, FileShare.None))
+        {
+            int blockSize = 1024;
+            while(blockSize > fileStream.Length && blockSize > 1)
+            {
+                blockSize /= 2;
+            }
+
+            fileStream.Position = 0L;
+            byte[] dataToFill = new byte[blockSize];
+            byte[] extraData = new byte[1];
+
+            while (fileStream.Position < (fileStream.Length-blockSize))
+            {
+                rng.GetBytes(dataToFill);
+                fileStream.Write(dataToFill,0,dataToFill.Length);
+
+            }
+            fileStream.Flush();
+
+            while (fileStream.Position < fileStream.Length)
+            {
+                rng.GetBytes(extraData);
+                fileStream.Write(extraData, 0, extraData.Length);
+            }
+            fileStream.Flush();
+        }
+
+        File.Delete(filePath);
     }
 
     public static OtpDatabase Load(string fileName, string password)

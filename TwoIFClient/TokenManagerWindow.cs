@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using System.Windows.Forms;
 using OtpLibrary;
 using OtpNet;
@@ -19,9 +20,26 @@ namespace TwoIFClient
         /// </summary>
         public OtpArticle SelectedArticle { get; private set; }
 
-        public TokenManagerWindow(OtpDatabase database, OtpArticle currentArticle)
+        public TokenManagerWindow(OtpDatabase database, OtpArticle currentArticle, int backcolorIntensity = 24)
         {
             InitializeComponent();
+            this.BackColor = Color.FromArgb(backcolorIntensity, backcolorIntensity, backcolorIntensity);
+
+            this.CloseButton.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.AddQrButton.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.AddUriButton.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.AddManuallyButton.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.DeleteButton.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.SelectButton.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.ChangePasswordButton.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.NameTextBox.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.AccountTextBox.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.SecretTextBox.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.CountOrPeriodTextBox.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.UriAddTextBox.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.TokenListBox.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+
+
             _database = database;
             SelectedArticle = currentArticle;
             PopulateList();
@@ -37,7 +55,7 @@ namespace TwoIFClient
                 var article = _database.OtpArticles[i];
                 bool isActive = (article == SelectedArticle);
                 // Green check for the active token, blank indent for others
-                TokenListBox.Items.Add((isActive ? "✔ " : "    ") + article.Name);
+                TokenListBox.Items.Add((isActive ? "✔  " : "    ") + article.Name);
             }
 
             // Restore the list highlight to where it was (or 0 if first load)
@@ -180,24 +198,105 @@ namespace TwoIFClient
             }
         }
 
+        private void ChangePasswordButton_Click(object sender, EventArgs e)
+        {
+            string newPassword;
+            using (var newDlg = new PasswordDialog("Enter your NEW database password:"))
+            {
+                if (newDlg.ShowDialog(this) != DialogResult.OK) return;
+                newPassword = newDlg.Password;
+            }
+
+            using (var confirmDlg = new PasswordDialog("Confirm your NEW database password:"))
+            {
+                if (confirmDlg.ShowDialog(this) != DialogResult.OK) return;
+                if (confirmDlg.Password != newPassword)
+                {
+                    MessageBox.Show(
+                        "The new passwords do not match. Password was not changed.",
+                        "Password Mismatch", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+                _database.Password = newPassword;
+                AppDataStore.Save(OtpDatabase.DEFAULT_DATABASE_FILE_NAME, _database, _database.Password);
+                MessageBox.Show("Password changed successfully.",
+                    "Password Changed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("An unexpected error occurred:\n\n"
+                    + ex.GetType().Name + " — " + ex.Message,
+                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
+        }
+
         private bool TryAddArticleFromUri(string uri)
         {
             OtpArticle article;
-            try { article = new OtpArticle(uri); }
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+                article = new OtpArticle(uri);
+            }
             catch (Exception ex)
             {
                 MessageBox.Show("Could not parse token data." + Environment.NewLine + Environment.NewLine + "" + ex.Message,
                     "Parse Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
 
-            _database.OtpArticles.Add(article);
+            if (string.IsNullOrWhiteSpace(article.Name))
+            {
+                // Malformed/legacy URI? Prompt for a Name and (optional) account.
 
-            // Highlight the newly added row
-            int newIdx = _database.OtpArticles.Count - 1;
-            SelectedArticle = article;
-            PopulateList();
-            TokenListBox.SelectedIndex = newIdx;
+                string userSuppliedName = null;
+                string userSuppliedAccount = null;
+
+                using var nameDlg = new TokenNameDialog(this.BackColor.R);
+                if (nameDlg.ShowDialog(this) != DialogResult.OK)
+                    return false; // user cancelled — don't add a nameless token
+
+                userSuppliedName = nameDlg.TokenName;
+                userSuppliedAccount = nameDlg.TokenAccount;
+
+                bool applied = article.SetNameIfBlank(userSuppliedName, userSuppliedAccount);
+                if(!applied)
+                {
+                    MessageBox.Show("Failed to apply name to the imported token. Import will not continue.",
+                    "Token Name Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+            }
+
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+
+                _database.OtpArticles.Add(article);
+                AppDataStore.Save(OtpDatabase.DEFAULT_DATABASE_FILE_NAME, _database, _database.Password);
+                // Highlight the newly added row
+                int newIdx = _database.OtpArticles.Count - 1;
+                SelectedArticle = article;
+                PopulateList();
+                TokenListBox.SelectedIndex = newIdx;
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
             return true;
         }
 
@@ -229,12 +328,23 @@ namespace TwoIFClient
                 SelectedArticle = null; // active token is gone
 
             int removedIdx = TokenListBox.SelectedIndex;
-            _database.OtpArticles.Remove(article);
-            PopulateList();
+            
 
-            // Keep the list highlight near where it was
-            if (TokenListBox.Items.Count > 0)
-                TokenListBox.SelectedIndex = Math.Min(removedIdx, TokenListBox.Items.Count - 1);
+            try
+            {
+                Cursor.Current = Cursors.WaitCursor;
+                _database.OtpArticles.Remove(article);
+                AppDataStore.Save(OtpDatabase.DEFAULT_DATABASE_FILE_NAME, _database, _database.Password);
+                PopulateList();
+
+                // Keep the list highlight near where it was
+                if (TokenListBox.Items.Count > 0)
+                    TokenListBox.SelectedIndex = Math.Min(removedIdx, TokenListBox.Items.Count - 1);
+            }
+            finally
+            {
+                Cursor.Current = Cursors.Default;
+            }
         }
 
         // -- Close -----------------------------------------------------------------

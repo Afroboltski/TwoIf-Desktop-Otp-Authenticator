@@ -7,9 +7,13 @@ namespace TwoIFClient
     {
         public string Password => PasswordBox.Text;
 
-        public PasswordDialog(string prompt = "Enter database password:")
+        public PasswordDialog(string prompt = "Enter database password:", int backcolorIntensity = 24)
         {
             InitializeComponent();
+            this.BackColor = Color.FromArgb(backcolorIntensity, backcolorIntensity, backcolorIntensity);
+            this.CancelButton.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.OkButton.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
+            this.PasswordBox.BackColor = Color.FromArgb(backcolorIntensity + 16, backcolorIntensity + 16, backcolorIntensity + 16);
             PromptLabel.Text = prompt;
         }
 

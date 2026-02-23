@@ -1,13 +1,68 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
+using System.Security;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using static OtpLibrary.PasswordEncryptor;
 
 namespace OtpLibrary
 {
     public class OtpDatabase
     {
+        public static readonly string DEFAULT_DATABASE_FILE_NAME = "database.dat";
+        private SecureString _password = null;
+
+        private readonly byte[] _temporaryExtraScrambling = new byte[32];
+
+        public string Password
+        {
+            get
+            {
+                if (_password == null)
+                    return null;
+                IntPtr ptr = System.Runtime.InteropServices.Marshal.SecureStringToGlobalAllocUnicode(_password);
+                try
+                {
+                    string base64Password = System.Runtime.InteropServices.Marshal.PtrToStringUni(ptr);
+                    byte[] stringBytes = Convert.FromBase64String(base64Password);
+                    for (int j = 0; j < stringBytes.Length; j++)
+                    {
+                        for (int i = 0; i < _temporaryExtraScrambling.Length; i++)
+                        {
+                            stringBytes[j] = (byte)(stringBytes[j] ^ _temporaryExtraScrambling[i]);
+                        }
+                    }
+                    return Encoding.UTF8.GetString(stringBytes);
+                }
+                finally
+                {
+                    System.Runtime.InteropServices.Marshal.ZeroFreeGlobalAllocUnicode(ptr);
+                }
+            }
+            set
+            {
+                _password = new System.Security.SecureString();
+                byte[] stringBytes = Encoding.UTF8.GetBytes(value);
+                for(int j=0;j< stringBytes.Length;j++)
+                {
+                    for (int i = 0; i < _temporaryExtraScrambling.Length; i++)
+                    {
+                        stringBytes[j] = (byte)(stringBytes[j] ^ _temporaryExtraScrambling[i]);
+                    }
+                }
+                string base64Password = Convert.ToBase64String(stringBytes);
+
+                foreach (char c in base64Password)
+                {
+                    _password.AppendChar(c);
+                }
+                _password.MakeReadOnly();
+            }
+        }
+
         public List<OtpArticle> OtpArticles { get; set; }
 
         /// <summary>
@@ -31,7 +86,14 @@ namespace OtpLibrary
             }
         }
 
-        public OtpDatabase() { OtpArticles = new List<OtpArticle>(); }
+        public OtpDatabase()
+        {
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(_temporaryExtraScrambling);
+            }
+            OtpArticles = new List<OtpArticle>();
+        }
 
         // ── Serialisation ────────────────────────────────────────────────────────
         // File format:
@@ -54,7 +116,17 @@ namespace OtpLibrary
                 throw new ArgumentException("A valid file must be specified.", nameof(fileName));
 
             string cipherText = File.ReadAllText(fileName);
-            string plainText = PasswordEncryptor.DecryptFromBase64(cipherText,password);
+            string plainText = null;
+
+            try
+            {
+                plainText = PasswordEncryptor.DecryptFromBase64(cipherText, password);
+            }
+            catch (IncorrectEncryptionPasswordException)
+            {
+                return null;
+            }
+
             string[] lines = plainText.Split(separator, StringSplitOptions.RemoveEmptyEntries);
 
             int firstBlobLine = 0;
@@ -75,7 +147,7 @@ namespace OtpLibrary
             {
                 if (string.IsNullOrWhiteSpace(lines[i])) continue;
 
-                OtpArticle article = OtpArticle.FromBase64(lines[i]);
+                OtpArticle article = OtpArticle.FromUri(lines[i]);
                 if (article == null)
                 {
                     invalidPasswordCount++;
@@ -111,7 +183,7 @@ namespace OtpLibrary
             for (int i = 0; i < OtpArticles.Count; i++)
             {
                 if (OtpArticles[i] == null) continue;
-                sb.AppendLine(OtpArticles[i].ToBase64());
+                sb.AppendLine(OtpArticles[i].ToUri());
             }
 
             string ciphertext = PasswordEncryptor.EncryptToBase64(sb.ToString(), password);
