@@ -1,8 +1,8 @@
 # Two-Factor Authentication Is Fun (TwoIF)
 A desktop-based application that simply generates one-time passwords (much like Google Authenticator does). Support is currently limited to TOTP (Time-based  one-time password) and HOTP (HMAC-based (counter) one-time password) codes - no support for Google Authenticator-like push notification approvals.
-
-![Main Client Window - Screenshot](https://github.com/Afroboltski/TwoIf-Desktop-Otp-Authenticator/blob/e4845f1d13a5958a8a108d70ba8dd078f0011d61/TwoIFClient/Main_Client_Window.png)
-![Token Manager Window - Screenshot](https://github.com/Afroboltski/TwoIf-Desktop-Otp-Authenticator/blob/e4845f1d13a5958a8a108d70ba8dd078f0011d61/TwoIFClient/Token_Manager_Window.png)
+                                   
+![Main Client Window - Screenshot](https://github.com/Afroboltski/TwoIf-Desktop-Otp-Authenticator/blob/52d1ad4ccfb89c0e2f48c78878d2489754cec2c3/TwoIFClient/Main_Client_Window.png)
+![Token Manager Window - Screenshot](https://github.com/Afroboltski/TwoIf-Desktop-Otp-Authenticator/blob/52d1ad4ccfb89c0e2f48c78878d2489754cec2c3/TwoIFClient/Token_Manager_Window.png)
 
 # UI
 Currently the UI is based on Windows Forms, which is not the best for portability.
