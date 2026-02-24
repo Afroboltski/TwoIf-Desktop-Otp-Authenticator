@@ -405,7 +405,7 @@
             TypeLabel.Name = "TypeLabel";
             TypeLabel.Size = new Size(65, 14);
             TypeLabel.TabIndex = 6;
-            TypeLabel.Text = "OPT Type";
+            TypeLabel.Text = "OTP Type";
             // 
             // groupBox2
             // 
