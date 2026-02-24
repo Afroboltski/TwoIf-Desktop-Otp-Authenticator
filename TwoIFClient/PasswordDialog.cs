@@ -22,6 +22,7 @@ namespace TwoIFClient
             if (string.IsNullOrEmpty(PasswordBox.Text))
             {
                 MessageBox.Show("Password cannot be empty.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                PasswordBox.Focus();
                 return;
             }
             this.DialogResult = DialogResult.OK;
