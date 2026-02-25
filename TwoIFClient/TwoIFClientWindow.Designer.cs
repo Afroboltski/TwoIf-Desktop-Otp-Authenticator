@@ -40,6 +40,7 @@
             CountEntry = new NumericUpDown();
             CountLabel = new Label();
             AccountLabel = new Label();
+            ApplyCounterTimer = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)CountEntry).BeginInit();
             SuspendLayout();
             // 
@@ -129,6 +130,8 @@
             CountEntry.TabIndex = 4;
             CountEntry.Visible = false;
             CountEntry.ValueChanged += CountEntry_ValueChanged;
+            CountEntry.KeyDown += CountEntry_KeyDown;
+            CountEntry.Leave += CountEntry_Leave;
             // 
             // CountLabel
             // 
@@ -161,6 +164,11 @@
             AccountLabel.Text = "Account Name";
             AccountLabel.TextAlign = ContentAlignment.TopCenter;
             AccountLabel.Click += AccountLabel_Click;
+            // 
+            // ApplyCounterTimer
+            // 
+            ApplyCounterTimer.Interval = 500;
+            ApplyCounterTimer.Tick += ApplyCounterTimer_Tick;
             // 
             // TwoIFClientWindow
             // 
@@ -198,5 +206,6 @@
         private NumericUpDown CountEntry;
         private Label CountLabel;
         private Label AccountLabel;
+        private System.Windows.Forms.Timer ApplyCounterTimer;
     }
 }

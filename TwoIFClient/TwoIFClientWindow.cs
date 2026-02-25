@@ -92,6 +92,8 @@ namespace TwoIFClient
                     CountLabel.Visible = true;
                     CountEntry.Visible = true;
                     CountEntry.Value = (decimal)_otpArticle.HOTPCounter;
+                    CountEntry.Focus();
+                    CountEntry.Select(0, CountEntry.Value.ToString().Length);
                     TimeLabel.Visible = false;
                 }
                 else
@@ -104,6 +106,9 @@ namespace TwoIFClient
             else
             {
 
+                CountLabel.Visible = false;
+                CountEntry.Visible = false;
+                TimeLabel.Visible = true;
             }
             RefreshName();
             RefreshCode();
@@ -380,5 +385,32 @@ namespace TwoIFClient
         {
             CodeLabel_Click(sender, e);
         }
+
+        private void CountEntry_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Escape)
+            {
+                CountEntry.Focus();
+                CountEntry.Select(0, CountEntry.Value.ToString().Length);
+            }
+            else
+            {
+                ApplyCounterTimer.Stop();
+                ApplyCounterTimer.Start();
+            }
+
+        }
+
+        private void ApplyCounterTimer_Tick(object sender, EventArgs e)
+        {
+            ApplyCounterTimer.Stop();
+            CountEntry.Focus();
+        }
+
+        private void CountEntry_Leave(object sender, EventArgs e)
+        {
+            ApplyCounterTimer.Stop();
+        }
+
     }
 }
