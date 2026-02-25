@@ -347,6 +347,7 @@ namespace TwoIFClient
             try
             {
                 Cursor = Cursors.WaitCursor;
+                Cursor.Current = Cursors.WaitCursor;
                 // Restore whichever article was active when the database was last saved
                 ChangeArticle(_database?.SelectedArticle);
             }
