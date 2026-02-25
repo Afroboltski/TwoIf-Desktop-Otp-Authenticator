@@ -10,6 +10,16 @@ public static class AppDataStore
 {
     public static void Save(string fileName, OtpDatabase database, string password)
     {
+        SaveImplementation(fileName, false, database, password);
+    }
+
+    public static void SaveHeaderOnly(string fileName, OtpDatabase database)
+    {
+        SaveImplementation(fileName,true,database);
+    }
+
+    private static void SaveImplementation(string fileName, bool headerOnly, OtpDatabase database, string password = null)
+    {
         string dir = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             Assembly.GetExecutingAssembly().GetName().Name);
@@ -22,7 +32,15 @@ public static class AppDataStore
 
         try
         {
-            database.WriteToFile(tempPath, password);
+            if(headerOnly)
+            {
+                database.WriteOnlyHeaderToFile(tempPath, actualPath);
+            }
+            else
+            {
+                database.WriteToFile(tempPath, password);
+            }
+
             if (File.Exists(actualPath))
             {
                 File.Move(actualPath, oldPath);

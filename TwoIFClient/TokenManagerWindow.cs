@@ -14,13 +14,7 @@ namespace TwoIFClient
     {
         private readonly OtpDatabase _database;
 
-        /// <summary>
-        /// The article the user has marked as active inside this window.
-        /// The main window reads this on close.
-        /// </summary>
-        public OtpArticle SelectedArticle { get; private set; }
-
-        public TokenManagerWindow(OtpDatabase database, OtpArticle currentArticle, int backcolorIntensity = 24)
+        public TokenManagerWindow(OtpDatabase database, int backcolorIntensity = 24)
         {
             InitializeComponent();
             this.BackColor = Color.FromArgb(backcolorIntensity, backcolorIntensity, backcolorIntensity);
@@ -41,7 +35,6 @@ namespace TwoIFClient
 
 
             _database = database;
-            SelectedArticle = currentArticle;
             PopulateList();
         }
 
@@ -53,9 +46,9 @@ namespace TwoIFClient
             for (int i = 0; i < _database.OtpArticles.Count; i++)
             {
                 var article = _database.OtpArticles[i];
-                bool isActive = (article == SelectedArticle);
+                bool isActive = (article == _database.SelectedArticle);
                 // Green check for the active token, blank indent for others
-                TokenListBox.Items.Add((isActive ? "✔  " : "    ") + article.Name);
+                TokenListBox.Items.Add((isActive ? "✔\t" : "\t") + article.Name);
             }
 
             // Restore the list highlight to where it was (or 0 if first load)
@@ -286,10 +279,11 @@ namespace TwoIFClient
                 Cursor.Current = Cursors.WaitCursor;
 
                 _database.OtpArticles.Add(article);
+                _database.SelectedArticle = article;
                 AppDataStore.Save(OtpDatabase.DEFAULT_DATABASE_FILE_NAME, _database, _database.Password);
+
                 // Highlight the newly added row
                 int newIdx = _database.OtpArticles.Count - 1;
-                SelectedArticle = article;
                 PopulateList();
                 TokenListBox.SelectedIndex = newIdx;
             }
@@ -307,7 +301,9 @@ namespace TwoIFClient
             var article = CurrentlyHighlightedArticle;
             if (article == null) return;
 
-            SelectedArticle = article;
+            _database.SelectedArticle = article;
+            AppDataStore.SaveHeaderOnly(OtpDatabase.DEFAULT_DATABASE_FILE_NAME, _database);
+
             // Refresh list so the check mark moves to the new active token
             PopulateList();
         }
@@ -324,8 +320,8 @@ namespace TwoIFClient
                 "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (res != DialogResult.Yes) return;
 
-            if (article == SelectedArticle)
-                SelectedArticle = null; // active token is gone
+            if (article == _database.SelectedArticle)
+                _database.SelectedArticle = null; // active token is gone
 
             int removedIdx = TokenListBox.SelectedIndex;
             

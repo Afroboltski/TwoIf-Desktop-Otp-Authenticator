@@ -105,7 +105,6 @@ namespace TwoIFClient
             }
             else
             {
-
                 CountLabel.Visible = false;
                 CountEntry.Visible = false;
                 TimeLabel.Visible = true;
@@ -205,7 +204,7 @@ namespace TwoIFClient
                 string secondPassword = PromptForPassword("Re-enter the same password:");
                 if (secondPassword == null) return; // user cancelled
 
-                if(!string.Equals(firstPassword, secondPassword))
+                if (!string.Equals(firstPassword, secondPassword))
                 {
                     MessageBox.Show("Passwords do not match!",
                             "Password Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -217,15 +216,12 @@ namespace TwoIFClient
 
             try
             {
-                using var manager = new TokenManagerWindow(_database, _otpArticle, _minIntensity + 10);
+                using var manager = new TokenManagerWindow(_database, _minIntensity + 10);
                 manager.ShowDialog(this);
                 Cursor.Current = Cursors.WaitCursor;
 
-                // Persist whatever changes were made (adds, deletes, new selection)
-                _database.SelectedArticle = manager.SelectedArticle;
-
                 // Apply — null is fine; ChangeArticle handles it
-                ChangeArticle(manager.SelectedArticle);
+                ChangeArticle(_database.SelectedArticle);
             }
             finally
             {
@@ -303,9 +299,9 @@ namespace TwoIFClient
                     _database.Password = password;
                     break;
                 }
-                catch(InvalidPasswordException ex1)
+                catch (InvalidPasswordException ex1)
                 {
-                    if(passwordAttempts >= 3)
+                    if (passwordAttempts >= 3)
                     {
                         _database = null;
                         break;
@@ -346,7 +342,6 @@ namespace TwoIFClient
 
             try
             {
-                Cursor = Cursors.WaitCursor;
                 Cursor.Current = Cursors.WaitCursor;
                 // Restore whichever article was active when the database was last saved
                 ChangeArticle(_database?.SelectedArticle);

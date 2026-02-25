@@ -115,7 +115,7 @@ namespace OtpLibrary
             if (!File.Exists(fileName))
                 throw new ArgumentException("A valid file must be specified.", nameof(fileName));
 
-            string cipherText = File.ReadAllText(fileName);
+            ReadFile(fileName, out string header, out string cipherText);
             string plainText = null;
 
             try
@@ -129,23 +129,37 @@ namespace OtpLibrary
 
             string[] lines = plainText.Split(separator, StringSplitOptions.RemoveEmptyEntries);
 
-            int firstBlobLine = 0;
             int savedSelectedIndex = -1;
+            int skipLines = 0;
 
             // Check for new-format header
-            if (lines.Length > 0 && lines[0].StartsWith(SelectionPrefix))
+            if (!string.IsNullOrEmpty(header) && header.StartsWith(SelectionPrefix))
+            {
+                if (int.TryParse(header.Substring(SelectionPrefix.Length), out int idx))
+                    savedSelectedIndex = idx;
+            }
+            else if (lines!=null && lines.Length > 0 && !string.IsNullOrEmpty(lines[0]) && lines[0].StartsWith(SelectionPrefix))
             {
                 if (int.TryParse(lines[0].Substring(SelectionPrefix.Length), out int idx))
+                {
                     savedSelectedIndex = idx;
-                firstBlobLine = 1;
+                    skipLines = 1;
+                }
+
             }
 
             int invalidPasswordCount = 0;
             OtpDatabase db = new OtpDatabase();
 
-            for (int i = firstBlobLine; i < lines.Length; i++)
+            for (int i = skipLines; i < lines.Length; i++)
             {
                 if (string.IsNullOrWhiteSpace(lines[i])) continue;
+
+                if (lines[i].StartsWith(SelectionPrefix)) 
+                {
+                    // Perhaps the old format, with a new header?
+                    continue;
+                }
 
                 OtpArticle article = OtpArticle.FromUri(lines[i]);
                 if (article == null)
@@ -178,7 +192,7 @@ namespace OtpLibrary
             var sb = new StringBuilder();
 
             // Header line — always written so future loads know the selection
-            sb.AppendLine(SelectionPrefix + SelectedIndex);
+            string header = SelectionPrefix + SelectedIndex;
 
             for (int i = 0; i < OtpArticles.Count; i++)
             {
@@ -186,9 +200,64 @@ namespace OtpLibrary
                 sb.AppendLine(OtpArticles[i].ToUri());
             }
 
-            string ciphertext = PasswordEncryptor.EncryptToBase64(sb.ToString(), password);
+            string cipherText = PasswordEncryptor.EncryptToBase64(sb.ToString(), password);
 
-            File.WriteAllText(fileName, ciphertext);
+            WriteFile(fileName, header, cipherText);
+        }
+
+        public void WriteOnlyHeaderToFile(string fileNameForWriting, string existingFile)
+        {
+            if (string.IsNullOrWhiteSpace(fileNameForWriting))
+                throw new ArgumentException("A valid file must be specified.", nameof(fileNameForWriting));
+
+            ReadFile(existingFile, out string _, out string cipherText);
+
+            // Header line — always written so future loads know the selection
+            string header = SelectionPrefix + SelectedIndex;
+            WriteFile(fileNameForWriting, header, cipherText);
+
+
+        }
+
+        private static void WriteFile(string fileName, string header, string cipherText)
+        {
+            if (string.IsNullOrWhiteSpace(fileName))
+                throw new ArgumentException("A valid file must be specified.", nameof(fileName));
+
+            using (FileStream fs = File.Create(fileName))
+            {
+                if(!string.IsNullOrEmpty(header))
+                {
+                    fs.Write(Encoding.UTF8.GetBytes(header));
+                }
+                fs.WriteByte((byte)'\0');
+                fs.Write(Encoding.UTF8.GetBytes(cipherText));
+            }
+        }
+
+        private static void ReadFile(string fileName, out string header, out string cipherText)
+        {
+            header = null;
+            cipherText = null;
+            if (string.IsNullOrWhiteSpace(fileName))
+                throw new ArgumentException("A valid file must be specified.", nameof(fileName));
+
+            byte[] allText = File.ReadAllBytes(fileName);
+            int indexOfNull = -1;
+            for(int i=0;i<allText.Length;i++)
+            {
+                if (allText[i]=='\0')
+                {
+                    indexOfNull = i;
+                    break;
+                }    
+            }
+            if(indexOfNull >= 1) // 1 (not 0) because a null for byte 0 would still be a non-existant header
+            {
+                header = Encoding.UTF8.GetString(allText,0,indexOfNull);
+            }
+            cipherText = Encoding.UTF8.GetString(allText, indexOfNull + 1, allText.Length-(indexOfNull+1));
+
         }
     }
 }
