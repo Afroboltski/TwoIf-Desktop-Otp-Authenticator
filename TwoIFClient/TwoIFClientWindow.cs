@@ -264,7 +264,7 @@ namespace TwoIFClient
 
         private string PromptForPassword(string prompt)
         {
-            using var dlg = new PasswordDialog(prompt, _minIntensity + 10);
+            using var dlg = new PasswordDialog(prompt);
             return dlg.ShowDialog() == DialogResult.OK ? dlg.Password : null;
         }
 

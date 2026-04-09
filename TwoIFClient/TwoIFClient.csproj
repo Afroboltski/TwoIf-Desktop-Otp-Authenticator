@@ -28,4 +28,10 @@
     <ProjectReference Include="..\QRCodeLibrary\QRCodeLibrary.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="UriEditorDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>

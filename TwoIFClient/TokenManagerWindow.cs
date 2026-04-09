@@ -95,7 +95,14 @@ namespace TwoIFClient
                 return;
             }
 
-            TryAddArticleFromUri(code.Data);
+            string uriFromQrCode = code.Data;
+            using (var newDlg = new UriEditorDialog("The following URI was extracted from the QR code. Please review the URI before adding.", uriFromQrCode))
+            {
+                if (newDlg.ShowDialog(this) != DialogResult.OK) return;
+                uriFromQrCode = newDlg.Uri;
+            }
+
+            TryAddArticleFromUri(uriFromQrCode);
         }
 
         // -- Add via secret string -------------------------------------------------
